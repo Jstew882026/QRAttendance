@@ -6,47 +6,59 @@
     <title>Classroom Attendance Router</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f4f4f9; }
-        .card { background: white; padding: 40px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; }
-        h1 { color: #d32f2f; margin-bottom: 10px; }
-        p { color: #555; font-size: 1.1em; line-by-line: 1.5; }
+        .card { background: white; padding: 40px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 450px; }
+        h1 { color: #d32f2f; }
+        #qr-image { border: 4px solid #333; padding: 10px; margin: 20px 0; background: white; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div id="status-message">Verifying security token...</div>
+        <div id="display-area">Loading secure check-in...</div>
     </div>
 
     <script>
         // --- CONFIGURATION ---
-        const ATTENDANCE_FORM_URL = "https://forms.cloud.microsoft/r/2nH0ieTjtt";
-        const TIME_WINDOW_SECONDS = 20; 
+        const FORMS_URL = "https://office.com"; 
+        const WINDOW_SECONDS = 20;
         // ---------------------
-// 1. Get the creation timestamp from the URL parameters (?t=1710000000000)
-        const urlParams = new URLSearchParams(window.location.search);
-        const codeGenerationTime = parseInt(urlParams.get('t'));
-        const currentTime = Date.now();
+               const urlParams = new URLSearchParams(window.location.search);
+        const isStream = urlParams.get('stream');
+        const tokenTime = parseInt(urlParams.get('t'));
 
-        // 2. Validate if the token exists and compute age
-        if (!codeGenerationTime) {
-            document.getElementById("status-message").innerHTML = `
-                <h1>Invalid QR Code</h1>
-                <p>This QR code does not contain a valid check-in token.</p>
-            `;
-        } else {
-            const secondsElapsed = (currentTime - codeGenerationTime) / 1000;
-
-            // 3. Check if the scan happened within the 20-second window
-            if (secondsElapsed >= 0 && secondsElapsed <= TIME_WINDOW_SECONDS) {
-                document.getElementById("status-message").innerHTML = "<h2>Redirecting to Attendance Form...</h2>";
-                window.location.href = ATTENDANCE_FORM_URL;
-            } else {
-                // Code is older than 20 seconds
-                document.getElementById("status-message").innerHTML = `
-                    <h1>QR Code Expired</h1>
-                    <p>This code was scanned <strong>${Math.round(secondsElapsed)} seconds</strong> after being generated.</p>
-                    <p>To prevent cheating, links expire in 20 seconds. Please look at the projector for a new code or see the teacher.</p>
-              `;
+        // MODE 1: Teacher Projector Stream
+        if (isStream === "true") {
+            function updateQR() {
+                const liveToken = Date.now();
+                const studentUrl = window.location.origin + window.location.pathname + "?t=" + liveToken;
+                const qrApi = "https://qrserver.com" + encodeURIComponent(studentUrl);
+                
+                document.getElementById("display-area").innerHTML = `
+                    <h2 style='color:#28a745;'>📢 Scanning Active</h2>
+                    <p>This code changes every 20 seconds to prevent cheating.</p>
+                    <img id='qr-image' src='${qrApi}' alt='QR'>
+                    <p style='color:#666; font-size:12px;'>DO NOT screenshot. Sent links will expire.</p>
+                `;
             }
+            updateQR();
+            setInterval(updateQR, WINDOW_SECONDS * 1000);
+
+        // MODE 2: Student Scanning Verification
+        } else if (tokenTime) {
+            const age = (Date.now() - tokenTime) / 1000;
+            if (age >= 0 && age <= WINDOW_SECONDS) {
+                document.getElementById("display-area").innerHTML = "<h2>Redirecting to Attendance Form...</h2>";
+                window.location.href = FORMS_URL;
+            } else {
+                document.getElementById("display-area").innerHTML = `
+                    <h1>QR Code Expired</h1>
+                                        <p>This code has timed out. Please look at the projector for the new active code.</p>
+                `;
+            }
+        } else {
+            document.getElementById("display-area").innerHTML = `
+                <h1>Invalid Code</h1>
+                <p>Please scan the live QR code on the classroom board.</p>
+            `;
         }
     </script>
 </body>
