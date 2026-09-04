@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Attendance Router</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f4f4f9; }
+        .card { background: white; padding: 40px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; }
+        h1 { color: #d32f2f; margin-bottom: 10px; }
+        p { color: #555; font-size: 1.1em; line-by-line: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div id="status-message">Verifying security token...</div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const ATTENDANCE_FORM_URL = "https://google.com";
+        const TIME_WINDOW_SECONDS = 20; 
+        // ---------------------
+// 1. Get the creation timestamp from the URL parameters (?t=1710000000000)
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeGenerationTime = parseInt(urlParams.get('t'));
+        const currentTime = Date.now();
+
+        // 2. Validate if the token exists and compute age
+        if (!codeGenerationTime) {
+            document.getElementById("status-message").innerHTML = `
+                <h1>Invalid QR Code</h1>
+                <p>This QR code does not contain a valid check-in token.</p>
+            `;
+        } else {
+            const secondsElapsed = (currentTime - codeGenerationTime) / 1000;
+
+            // 3. Check if the scan happened within the 20-second window
+            if (secondsElapsed >= 0 && secondsElapsed <= TIME_WINDOW_SECONDS) {
+                document.getElementById("status-message").innerHTML = "<h2>Redirecting to Attendance Form...</h2>";
+                window.location.href = ATTENDANCE_FORM_URL;
+            } else {
+                // Code is older than 20 seconds
+                document.getElementById("status-message").innerHTML = `
+                    <h1>QR Code Expired</h1>
+                    <p>This code was scanned <strong>${Math.round(secondsElapsed)} seconds</strong> after being generated.</p>
+                    <p>To prevent cheating, links expire in 20 seconds. Please look at the projector for a new code or see the teacher.</p>
+              `;
+            }
+        }
+    </script>
+</body>
+</html>
