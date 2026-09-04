@@ -15,13 +15,13 @@
     <div class="card">
         <div id="display-area">Loading secure check-in...</div>
     </div>
-
-    <script>
+        <script>
         // --- CONFIGURATION ---
         const FORMS_URL = "https://office.com"; 
         const WINDOW_SECONDS = 20;
         // ---------------------
-               const urlParams = new URLSearchParams(window.location.search);
+
+        const urlParams = new URLSearchParams(window.location.search);
         const isStream = urlParams.get('stream');
         const tokenTime = parseInt(urlParams.get('t'));
 
@@ -37,7 +37,7 @@
                     <p>This code changes every 20 seconds to prevent cheating.</p>
                     <img id='qr-image' src='${qrApi}' alt='QR'>
                     <p style='color:#666; font-size:12px;'>DO NOT screenshot. Sent links will expire.</p>
-                `;
+                                   `;
             }
             updateQR();
             setInterval(updateQR, WINDOW_SECONDS * 1000);
@@ -51,9 +51,9 @@
             } else {
                 document.getElementById("display-area").innerHTML = `
                     <h1>QR Code Expired</h1>
-                                        <p>This code has timed out. Please look at the projector for the new active code.</p>
+                    <p>This code has timed out. Please look at the projector for the new active code.</p>
                 `;
-            }
+                           }
         } else {
             document.getElementById("display-area").innerHTML = `
                 <h1>Invalid Code</h1>
