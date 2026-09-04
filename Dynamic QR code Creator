@@ -18,7 +18,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const ATTENDANCE_FORM_URL = "https://google.com";
+        const ATTENDANCE_FORM_URL = "https://forms.cloud.microsoft/r/2nH0ieTjtt";
         const TIME_WINDOW_SECONDS = 20; 
         // ---------------------
 // 1. Get the creation timestamp from the URL parameters (?t=1710000000000)
